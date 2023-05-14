@@ -1,4 +1,4 @@
-     Futuristic Driving is the AI model which detects the number plates of the vechicles and generates the text which will be verified to the registered banks and automatically the detection of money takes place and a sms will be send to the owner.
+   Futuristic Driving is the AI model which detects the number plates of the vechicles and generates the text which will be verified to the registered banks and automatically the detection of money takes place and a sms will be send to the owner.
 
 MAIN OBJECTIVE
 1.To eleminate the tolls.
