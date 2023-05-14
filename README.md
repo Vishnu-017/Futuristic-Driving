@@ -1,2 +1,1 @@
-# Futuristic-Driving
-Using number plate detection system instead of using fast-tags
+   Futuristic Driving is the AI model which detects the number plates of the vechicles and generates the text which will be verified to the registered banks and automatically the detection of money takes place and a sms will be send to the owner.
