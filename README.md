@@ -1,13 +1,16 @@
-   Futuristic Driving is the AI model which detects the number plates of the vechicles and generates the text which will be verified to the registered banks and automatically the detection of money takes place and a sms will be send to the owner.
+# Number plate detection and Notification System
 
-MAIN OBJECTIVE
+This project is an automated system for detecting vehicle numbers from images, processing toll payments, and sending SMS notifications to vehicle owners. It integrates computer vision, database management, and SMS notification services.
 
-1.To eleminate the tolls.
+## Features
+- Vehicle number plate detection using OCR (PaddleOCR)
+- Image processing for number plate extraction
+- Geolocation-based toll booth identification
+- Database management for owner and payment details
+- Automatic toll fee deduction from bank accounts
+- SMS notifications via Twilio
 
-2.To prevent the Fast Tag from being stolen or misplaced.
-
-3.To avoid false transaction or recharge.
-
-4.Cease out time taken for charging in tolls.
-
-5.Unregistered number plates can be detected.
+## Prerequisites
+- Python 3.8+
+- MySQL database
+- Twilio account
