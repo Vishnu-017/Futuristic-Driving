@@ -1,80 +1,114 @@
-def phone_number():
-  return ph[0]
-def taxamt():
-  return tax[0]
-def area():
-  return tollname
-def owner_name():
-  return name[0]
 import mysql.connector
 import location
-mydb = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  password="*****"
-)
 import detect
-a=detect.vech_no()
-mycursor = mydb.cursor()
-#fetching user details
-try:
-  mycursor.execute("SELECT * FROM vechile.owner_details where Vechicle_No = '{}' ;".format(a))
-  '''myresult = mycursor.fetchall()
-  for x in myresult:
-    print(x)
-  '''
-  myresult = mycursor.fetchone()
 
-  print(myresult) 
-  #selecting the pancard id to link the table
-  mycursor.execute("SELECT Pan_card FROM vechile.owner_details where Vechicle_No = '{}' ;".format(a))
-  pan = mycursor.fetchone()
-  print(pan[0]) 
+# Database connection
+mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="*****"  # Replace with your actual password
+)
 
-  #fetching bank details
-  mycursor.execute("select * from vechile.owner_details as v, bank.rbi as r where v.Pan_card = r.Pan_card and r.Pan_card = '{}';".format(pan[0]))
-  myresult = mycursor.fetchone()
-  print(myresult)
+# Function definitions
+def phone_number(ph):
+    return ph[0] if ph else None
 
-  mycursor.execute("select * from bank.rbi as r where r.Pan_card = '{}';".format(pan[0]))
-  myresult = mycursor.fetchone()
-  print(myresult)
+def taxamt(tax):
+    return tax[0] if tax else None
 
+def area(tollname):
+    return tollname
 
-  tollname = location.loc()
-  print(tollname)
-  mycursor.execute("select taxes from toll.toll_names where Names = '{}';".format(tollname))
-  tax = mycursor.fetchone()
-  taxamt()
-  print(tax[0])
+def owner_name(name):
+    return name[0] if name else None
 
+def main():
+    try:
+        mycursor = mydb.cursor()
+        
+        # Get vehicle number from detect module
+        vehicle_no = detect.vech_no()
+        
+        # Fetching user details
+        query = "SELECT * FROM vechile.owner_details WHERE Vechicle_No = %s"
+        mycursor.execute(query, (vehicle_no,))
+        owner_details = mycursor.fetchone()
+        if owner_details:
+            print("Owner Details:", owner_details)
+        else:
+            raise Exception("No owner details found")
 
-  #fetching phone number 
-  mycursor.execute("SELECT Phone_number FROM vechile.owner_details where Vechicle_No = '{}' ;".format(a))
-  ph = mycursor.fetchone()
-  phone_number()
-  print(ph[0])
+        # Fetching Pan card
+        query = "SELECT Pan_card FROM vechile.owner_details WHERE Vechicle_No = %s"
+        mycursor.execute(query, (vehicle_no,))
+        pan = mycursor.fetchone()
+        if not pan:
+            raise Exception("No Pan card found")
+        pan_card = pan[0]
+        print("Pan Card:", pan_card)
 
+        # Fetching bank details using JOIN
+        query = """
+            SELECT * FROM vechile.owner_details v
+            JOIN bank.rbi r ON v.Pan_card = r.Pan_card
+            WHERE r.Pan_card = %s
+        """
+        mycursor.execute(query, (pan_card,))
+        bank_details = mycursor.fetchone()
+        print("Bank Details:", bank_details)
 
-  #fetch name of the user
-  mycursor.execute("SELECT User_name FROM vechile.owner_details where Vechicle_No = '{}' ;".format(a))
-  name = mycursor.fetchone()
-  owner_name()
-  print(name[0])
+        # Get toll information
+        tollname = location.loc()
+        print("Toll Name:", tollname)
+        
+        query = "SELECT taxes FROM toll.toll_names WHERE Names = %s"
+        mycursor.execute(query, (tollname,))
+        tax = mycursor.fetchone()
+        if tax:
+            tax_amount = taxamt(tax)
+            print("Tax Amount:", tax_amount)
+        else:
+            raise Exception("No tax information found")
 
-  sql = "UPDATE bank.rbi as r set r.Savings = r.Savings-{} where r.Pan_card = '{}';".format(tax[0],pan[0])
+        # Fetch phone number
+        query = "SELECT Phone_number FROM vechile.owner_details WHERE Vechicle_No = %s"
+        mycursor.execute(query, (vehicle_no,))
+        ph = mycursor.fetchone()
+        if ph:
+            phone = phone_number(ph)
+            print("Phone Number:", phone)
+        else:
+            raise Exception("No phone number found")
 
-  mycursor.execute(sql)
+        # Fetch owner name
+        query = "SELECT User_name FROM vechile.owner_details WHERE Vechicle_No = %s"
+        mycursor.execute(query, (vehicle_no,))
+        name = mycursor.fetchone()
+        if name:
+            owner = owner_name(name)
+            print("Owner Name:", owner)
+        else:
+            raise Exception("No owner name found")
 
-  mydb.commit()
+        # Update bank savings
+        query = "UPDATE bank.rbi SET Savings = Savings - %s WHERE Pan_card = %s"
+        mycursor.execute(query, (tax_amount, pan_card))
+        mydb.commit()
+        print(mycursor.rowcount, "record(s) affected")
 
-  print(mycursor.rowcount, "record(s) affected")
+        # Verify update
+        query = "SELECT * FROM bank.rbi"
+        mycursor.execute(query)
+        all_bank_records = mycursor.fetchall()
+        print("Updated Bank Records:", all_bank_records)
 
-  mycursor.execute("select * from bank.rbi as r;")
-  myresult = mycursor.fetchall()
-  print(myresult) 
-  
-except:
-  print("Verification failed")
-  
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        mydb.rollback()
+    
+    finally:
+        mycursor.close()
+        mydb.close()
 
+if __name__ == "__main__":
+    main()
