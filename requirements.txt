@@ -1,0 +1,9 @@
+paddleocr
+opencv-python
+numpy
+mysql-connector-python
+geopy
+twilio
+python-dotenv
+imutils
+matplotlib
